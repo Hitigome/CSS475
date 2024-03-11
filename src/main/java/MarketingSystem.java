@@ -16,6 +16,8 @@ public class MarketingSystem {
         System.out.println("7. View Campaign Metrics");
         System.out.println("8. Get Employee by Employee Number");
         System.out.println("9. Add User to Company");
+        System.out.println("10. List Users");
+        System.out.println("11. List Companies");
         int input = scanner.nextInt();
         scanner.nextLine();
         switch (input) {
@@ -109,6 +111,12 @@ public class MarketingSystem {
                 System.out.println("Enter employee number:");
                 String employeeNumForUser = scanner.nextLine();
                 addUserToCompany(einForUser, employeeNumForUser);
+                break;
+            case 10:
+                listUsers();
+                break;
+            case 11:
+                listCompanies();
                 break;
             default:
                 System.out.println("Invalid input.");
@@ -304,6 +312,43 @@ public class MarketingSystem {
                 pstmt.setString(2, EIN);
                 pstmt.executeUpdate();
                 System.out.println("User added to company");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void listUsers() {
+        try (Connection conn = connect()) {
+            assert conn != null;
+            try (PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Users")) {
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    System.out.println("Employee Number: " + rs.getString("EmployeeNum"));
+                    System.out.println("First Name: " + rs.getString("FirstName"));
+                    System.out.println("Last Name: " + rs.getString("LastName"));
+                    System.out.println("Username: " + rs.getString("Username"));
+                    System.out.println("-------------------");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void listCompanies() {
+        try (Connection conn = connect()) {
+            assert conn != null;
+            try (PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Company")) {
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    System.out.println("EIN: " + rs.getString("EIN"));
+                    System.out.println("Name: " + rs.getString("Name"));
+                    System.out.println("Email: " + rs.getString("Email"));
+                    System.out.println("Phone Number: " + rs.getString("PhoneNumber"));
+                    System.out.println("Employee Number: " + rs.getString("EmployeeNum"));
+                    System.out.println("-------------------");
+                }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
