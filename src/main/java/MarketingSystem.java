@@ -14,12 +14,8 @@ public class MarketingSystem {
         System.out.println("5. Create Marketing Campaign");
         System.out.println("6. Create Ad");
         System.out.println("7. View Campaign Metrics");
-        System.out.println("8. Handle Inputs");
-        System.out.println("9. Get User by Username");
-        System.out.println("10. Get Employee by Employee Number");
-        System.out.println("11. Verify User Association With Company");
-        System.out.println("12. Handle Inputs and Metrics");
-        System.out.println("13. Add User to Company");
+        System.out.println("8. Get Employee by Employee Number");
+        System.out.println("9. Add User to Company");
         int input = scanner.nextInt();
         scanner.nextLine();
         switch (input) {
@@ -103,31 +99,11 @@ public class MarketingSystem {
                 viewCampaignMetrics(campaignNameForMetrics);
                 break;
             case 8:
-                System.out.println("Enter input:");
-                String inputString = scanner.nextLine();
-                handleInputs(inputString);
-                break;
-            case 9:
-                System.out.println("Enter username:");
-                String usernameForUser = scanner.nextLine();
-                getUserByUsername(usernameForUser);
-                break;
-            case 10:
                 System.out.println("Enter employee number:");
                 String employeeNumberForEmployee = scanner.nextLine();
                 getEmployeeByEmployeeNumber(employeeNumberForEmployee);
                 break;
-            case 11:
-                System.out.println("Enter employee number:");
-                String employeeNumForVerification = scanner.nextLine();
-                verifyUserAssociationWithCompany(employeeNumForVerification);
-                break;
-            case 12:
-                System.out.println("Enter input:");
-                String inputAndMetrics = scanner.nextLine();
-                handleInputsAndMetrics(inputAndMetrics);
-                break;
-            case 13:
+            case 9:
                 System.out.println("Enter EIN:");
                 String einForUser = scanner.nextLine();
                 System.out.println("Enter employee number:");
@@ -155,6 +131,17 @@ public class MarketingSystem {
     public static void addUser(String employeeNum, String firstName, String lastName, String username, String password) {
         try (Connection conn = connect()) {
             assert conn != null;
+            //Check for duplicate employee number
+            try (PreparedStatement pstmt = conn.prepareStatement("SELECT COUNT(*) FROM Users WHERE EmployeeNum = ?")) {
+                pstmt.setString(1, employeeNum);
+                ResultSet rs = pstmt.executeQuery();
+                rs.next();
+                int count = rs.getInt(1);
+                if (count > 0) {
+                    System.out.println("User with this employee number already exists.");
+                    return;
+                }
+            }
             try (PreparedStatement pstmt = conn.prepareStatement("INSERT INTO Users(EmployeeNum, FirstName, LastName, Username, Password) VALUES(?, ?, ?, ?, ?)")) {
                 pstmt.setString(1, employeeNum);
                 pstmt.setString(2, firstName);
@@ -179,9 +166,9 @@ public class MarketingSystem {
                 rs.next();
                 int count = rs.getInt(1);
                 if (count > 0) {
-                    System.out.println("User is associated with the company.");
+                    System.out.println("User is associated with this company.");
                 } else {
-                    System.out.println("User is not associated with the company.");
+                    System.out.println("User is not associated with this company.");
                 }
             }
         } catch (SQLException e) {
@@ -274,25 +261,15 @@ public class MarketingSystem {
             assert conn != null;
             try (PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Metrics WHERE CampaignID = (SELECT ID FROM MarketingCampaign WHERE CampaignName = ?)")) {
                 pstmt.setString(1, campaignName);
-                pstmt.executeQuery();
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    // Handle Inputs
-    public static void handleInputs(String input) {
-        // Implement your logic here
-    }
-
-    // Get User by Username
-    public static void getUserByUsername(String username) {
-        try (Connection conn = connect()) {
-            assert conn != null;
-            try (PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Users WHERE Username = ?")) {
-                pstmt.setString(1, username);
-                pstmt.executeQuery();
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    System.out.println("Campaign ID: " + rs.getInt("CampaignID"));
+                    System.out.println("Impressions: " + rs.getInt("Impressions"));
+                    System.out.println("Site Traffic: " + rs.getInt("siteTraffic"));
+                    System.out.println("Conversions: " + rs.getInt("Conversions"));
+                    System.out.println("Revenue: " + rs.getDouble("Revenue"));
+                    System.out.println("-------------------");
+                }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -303,34 +280,20 @@ public class MarketingSystem {
     public static void getEmployeeByEmployeeNumber(String employeeNum) {
         try (Connection conn = connect()) {
             assert conn != null;
-            try (PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Users WHERE EmployeeNum = ?")) {
-                pstmt.setString(1, employeeNum);
-                pstmt.executeQuery();
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    // Verify User Association With Company
-    public static void verifyUserAssociationWithCompany(String employeeNum) {
-        try (Connection conn = connect()) {
-            assert conn != null;
-            try (PreparedStatement pstmt = conn.prepareStatement("SELECT EIN FROM UserToCompany WHERE UserID = (SELECT ID FROM Users WHERE EmployeeNum = ?)")) {
+            try (PreparedStatement pstmt = conn.prepareStatement("SELECT FirstName, LastName, Username FROM Users WHERE EmployeeNum = ?")) {
                 pstmt.setString(1, employeeNum);
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
-                    rs.getString("EIN");
+                    System.out.println("First Name: " + rs.getString("FirstName"));
+                    System.out.println("Last Name: " + rs.getString("LastName"));
+                    System.out.println("Username: " + rs.getString("Username"));
+                } else {
+                    System.out.println("No user found with this employee number.");
                 }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    // Handle Inputs and Metrics
-    public static void handleInputsAndMetrics(String input) {
-        // Implement your logic here
     }
 
     public static void addUserToCompany(String EIN, String employeeNum) {
