@@ -4,6 +4,7 @@
 1. Find dbmarketing.txt: Locate the dbmarketing.txt file in the project directory. This file contains the schema and samples for the tables created for this project.
 2. Create a DB and import these tables
 3. Database Configuration: Ensure you have PostgreSQL installed and configured properly to interact with the database.
+4. In marketingSystem, there is a method called connection. Change the URL, user, and password, to match your db credentials.
 
 ## To Use
 1. Go to src > main > java > marketingSystem.java
