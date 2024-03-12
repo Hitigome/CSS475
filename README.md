@@ -1,4 +1,4 @@
-# CSS475
+# ReadMe
 ## To Use
 1. Go to src > main > java > marketingSystem.java
 2. Run marketSystem
