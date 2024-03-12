@@ -1,0 +1,122 @@
+CREATE TABLE SocialMediaType (
+	ID 		SERIAL not null,
+	PlatformName 	VARCHAR(20) not null unique,
+
+	Primary Key 	(ID)
+);
+
+CREATE TABLE Company (
+	EIN 			CHAR(9) not null,
+	Name			VARCHAR(50) not null,
+	Email 			VARCHAR(50) not null,
+	PhoneNumber 		VARCHAR(12) not null,
+	EmployeeNum 		VARCHAR(20) not null,
+
+	Primary Key 		(EIN)
+);
+
+CREATE TABLE SocialMediaAccounts (
+	ID 			SERIAL not null,
+	EIN			char(9) not null,
+	SocialMediaTypeID 	INTEGER not null,
+	AccountHandle 		VARCHAR(40) not null,
+
+	Primary Key 		(ID),
+	Foreign Key 		(SocialMediaTypeID) references SocialMediaType(ID) Deferrable Initially Deferred,
+	Foreign Key		(EIN) references Company(EIN) Deferrable Initially Deferred
+);
+
+CREATE TABLE MarketingCampaign (
+	ID 			SERIAL not null,
+	SocialMediaID 		INTEGER not null,
+	CampaignName 		VARCHAR(40) not null,
+	StartDate 		TIMESTAMP not null,
+	EndDate 		TIMESTAMP not null,
+	Cost 			DECIMAL not null,
+	Strategy 		VARCHAR(50) not null,
+
+	Primary Key 		(ID),
+	Foreign Key 		(SocialMediaID) references SocialMediaAccounts(ID) Deferrable Initially Deferred
+);
+
+CREATE TABLE Ads (
+	ID 			SERIAL not null,
+	MarketingCampaignID 	INTEGER not null,
+	StartDate 		TIMESTAMP not null,
+	EndDate 		TIMESTAMP not null,
+	TypeOfAd 		VARCHAR(20) not null,
+	
+	Primary Key 		(ID),
+	Foreign Key 		(MarketingCampaignID) references MarketingCampaign(ID) Deferrable Initially Deferred
+);
+
+CREATE TABLE Metrics ( 
+	ID 			SERIAL not null,
+	CampaignID 		INTEGER not null,
+	MetricDate 		TIMESTAMP not null,
+	Impressions 		INTEGER not null,
+	SiteTraffic 		INTEGER not null,
+	Conversions 		INTEGER not null,
+	Revenue 		DECIMAL not null,
+
+	Primary Key 		(ID),
+	Foreign Key 		(CampaignID) references MarketingCampaign(ID) Deferrable Initially Deferred
+);
+
+CREATE TABLE Users ( 
+	ID 			SERIAL not null,
+	EmployeeNum 		VARCHAR(20) not null,
+	FirstName 		VARCHAR(50) not null,
+	LastName 		VARCHAR(50) not null,
+	Username 		VARCHAR(50) not null,
+	Password 		VARCHAR(255) not null,
+
+	Primary Key 		(ID)
+);
+
+CREATE Table UserToCompany (
+	UserID 			INTEGER not null,
+	EIN 			CHAR(9) not null,
+	
+	Primary Key 		(UserID, EIN),
+	Foreign Key 		(UserID) references Users(ID) Deferrable Initially Deferred,
+	Foreign Key 		(EIN) references Company(EIN) Deferrable Initially Deferred
+);
+
+
+
+INSERT INTO SocialMediaType (PlatformName) VALUES
+    ('Facebook'),
+    ('Instagram'),
+    ('Twitter'),
+    ('LinkedIn');
+
+INSERT INTO Company (EIN, Name, Email, PhoneNumber, EmployeeNum) VALUES
+    ('000000001', 'Example Company', 'info@example.com', '123-456-7890', 'EMP001'),
+    ('234567890', 'Another Company', 'contact@anothercompany.com', '987-654-3210', 'EMP002');
+
+INSERT INTO SocialMediaAccounts (EIN, SocialMediaTypeID, AccountHandle) VALUES
+    ('000000001', 1, '@example_company_fb'),
+    ('000000001', 2, '@example_company_insta'),
+    ('000000001', 3, '@example_company_twitter'),
+    ('000000001', 4, '@example_company_linkedin');
+
+INSERT INTO MarketingCampaign (SocialMediaID, CampaignName, StartDate, EndDate, Cost, Strategy) VALUES
+    (2, 'Summer Sale Campaign', '2024-06-01', '2024-08-31', 5000.00, 'Promoting summer products'),
+    (2, 'Holiday Campaign', '2024-11-01', '2024-12-31', 8000.00, 'Special offers for the holiday season');
+
+INSERT INTO Ads (MarketingCampaignID, StartDate, EndDate, TypeOfAd) VALUES
+    (1, '2024-06-01', '2024-06-30', 'Banner Ad'),
+    (2, '2024-11-01', '2024-12-25', 'Sponsored Post');
+
+INSERT INTO Metrics (CampaignID, MetricDate, Impressions, SiteTraffic, Conversions, Revenue) VALUES
+    (1, '2024-06-01', 10000, 500, 20, 1000.00),
+    (2, '2024-11-01', 15000, 700, 30, 1500.00);
+
+INSERT INTO Users (EmployeeNum, FirstName, LastName, Username, Password) VALUES
+    ('EMP001', 'John', 'Doe', 'johndoe', 'password1'),
+    ('EMP002', 'Jane', 'Smith', 'janesmith', 'password2');
+
+INSERT INTO UserToCompany (UserID, EIN) VALUES
+    ('1', '000000001'),
+    ('2', '234567890');
